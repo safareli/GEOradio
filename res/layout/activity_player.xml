@@ -12,7 +12,7 @@
             android:id="@+id/bPlay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="playe" />
+            android:text="play" />
 
         <Button
             android:id="@+id/bStop"

@@ -20,7 +20,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-public class AndroidListViewActivity extends ListActivity {
+public class RadioListActivity extends ListActivity {
 	// url to make request
 	private static String url = "http://safareli.github.com/radios.json";
 
@@ -28,15 +28,16 @@ public class AndroidListViewActivity extends ListActivity {
 	private static final String TAG_RADIOS = "radios";
 	private static final String TAG_NAME = "name";
 	private static final String TAG_URL = "url";
-	private static final String TAG_FM = "fm";
+	private Helper help = new Helper(this);
 	JSONObject json;
 	JSONArray radios;
 
+	// @SuppressWarnings("deprecation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_android_list_view); 
-
+		setContentView(R.layout.activity_radio_list);
+		help.checkoInternetConnection();
 		new JSONTask().execute(url);
 
 	}
@@ -46,19 +47,18 @@ public class AndroidListViewActivity extends ListActivity {
 		getMenuInflater().inflate(R.menu.activity_android_list_view, menu);
 		return true;
 	}
-	
-	public class JSONTask extends AsyncTask<String, Void, JSONObject>{
+
+	public class JSONTask extends AsyncTask<String, Void, JSONObject> {
 
 		@Override
-		protected JSONObject doInBackground(String... params) {  
-			return  new JSONParser().getJSONFromUrl(params[0]);
+		protected JSONObject doInBackground(String... params) {
+			return new JSONParser().getJSONFromUrl(params[0]);
 		}
-		
 
 		@Override
 		protected void onPostExecute(JSONObject result) {
-			super.onPostExecute(result);  
-			
+			super.onPostExecute(result);
+
 			json = result;
 			ArrayList<HashMap<String, String>> radioList = new ArrayList<HashMap<String, String>>();
 			try {
@@ -69,18 +69,20 @@ public class AndroidListViewActivity extends ListActivity {
 					HashMap<String, String> map = new HashMap<String, String>();
 					map.put(TAG_NAME, c.getString(TAG_NAME));
 					map.put(TAG_URL, c.getString(TAG_URL));
-					map.put(TAG_FM, c.getString(TAG_FM));
-					Log.v("sapara", c.getString(TAG_NAME)+":::"+c.getString(TAG_URL)+":::"+c.getString(TAG_FM));
+					Log.v("sapara",
+							c.getString(TAG_NAME) + ":::"
+									+ c.getString(TAG_URL));
 					radioList.add(map);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			ListAdapter adapter = new SimpleAdapter(AndroidListViewActivity.this, radioList,
-					R.layout.list_item, new String[] { TAG_NAME, TAG_URL, TAG_FM },
-					new int[] { R.id.tvName, R.id.tvUrl, R.id.tvFM });
+			ListAdapter adapter = new SimpleAdapter(
+					RadioListActivity.this, radioList,
+					R.layout.list_item, new String[] { TAG_NAME, TAG_URL },
+					new int[] { R.id.tvName, R.id.tvUrl });
 
-			AndroidListViewActivity.this.setListAdapter(adapter);
+			RadioListActivity.this.setListAdapter(adapter);
 
 			// selecting single ListView item
 			ListView lv = getListView();
@@ -91,22 +93,23 @@ public class AndroidListViewActivity extends ListActivity {
 				public void onItemClick(AdapterView<?> parent, View view,
 						int position, long id) {
 					// getting values from selected ListItem
-					String name = ((TextView) view.findViewById(R.id.tvName)).getText().toString();
-					String url = ((TextView) view.findViewById(R.id.tvUrl)).getText().toString();
-					String fm = ((TextView) view.findViewById(R.id.tvFM)).getText().toString();
-					
+					String name = ((TextView) view.findViewById(R.id.tvName))
+							.getText().toString();
+					String url = ((TextView) view.findViewById(R.id.tvUrl))
+							.getText().toString();
+
 					// Starting new intent
-					Intent in = new Intent(getApplicationContext(), SingleMenuItemActivity.class);
+					Intent in = new Intent(getApplicationContext(),
+							SingleRadioActivity.class);
 					in.putExtra(TAG_NAME, name);
 					in.putExtra(TAG_URL, url);
-					in.putExtra(TAG_FM, fm);
 					startActivity(in);
 
 				}
 			});
-			
-			
+
 		}
-		
+
 	}
+
 }

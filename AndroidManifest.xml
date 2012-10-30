@@ -6,28 +6,26 @@
     <uses-sdk
         android:minSdkVersion="8"
         android:targetSdkVersion="15" />
-
+    <!-- Internet Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Network State Permissions -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
+        android:name=".MyApplication"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-        <activity
-            android:name=".AndroidListViewActivity"
-            android:label="@string/title_activity_android_list_view" >
+        <activity android:name=".RadioListActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
-        <activity
-            android:name=".SingleMenuItemActivity"
-            android:label="@string/title_activity_android_list_view" >
-
+        <activity android:name=".SingleRadioActivity" >
         </activity>
-        
     </application>
 
 </manifest>

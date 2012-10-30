@@ -3,14 +3,17 @@ package i.safareli.georadio;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
-import android.media.MediaPlayer.OnPreparedListener;
-import android.media.MediaPlayer.OnInfoListener;
 import android.media.MediaPlayer.OnErrorListener;
+import android.media.MediaPlayer.OnInfoListener;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
@@ -21,7 +24,7 @@ import android.widget.TextView;
 
 public class Player extends MediaPlayer implements OnPreparedListener,
 		OnInfoListener, OnClickListener, OnSeekBarChangeListener,
-		OnBufferingUpdateListener,OnErrorListener {
+		OnBufferingUpdateListener, OnErrorListener, OnCancelListener {
 
 	protected TextView _tvInfo;
 	protected Timer _timer;
@@ -33,22 +36,26 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 	protected final int MINUTE = 60 * 1000;
 	protected final int SECOND = 1000;
 	protected int _currentPosition;
-
-	protected ProgressDialog _buferingDialog;
+	protected ProgressDialog _bufferingDialog;
 	protected boolean _isSeeking = false;
-	protected boolean _isStoped = false;
-	protected boolean _isPrepared;
+	protected boolean _isStoped = true;
+	protected boolean _isPrepared = false;
 	protected String _dataSource;
-	protected Context _context;
+	protected Activity _activity;
 	protected Handler _handler;
+	protected boolean _isPreparing;
 
-	public Player(String url, Context context) throws IllegalArgumentException,
-			SecurityException, IllegalStateException, IOException {
+	public Player(String url, Activity activity)
+			throws IllegalArgumentException, SecurityException,
+			IllegalStateException, IOException {
 		super();
-		_context = context;
-		_buferingDialog = new ProgressDialog(_context);
-		_buferingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		_buferingDialog.setMessage("bufering...");
+		// TODO change context of dialog
+		_activity = activity;
+		_bufferingDialog = new ProgressDialog(_activity);
+		_bufferingDialog.getContext();
+		_bufferingDialog.setOnCancelListener(this);
+		_bufferingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		_bufferingDialog.setMessage("buffering...");
 
 		setAudioStreamType(AudioManager.STREAM_MUSIC);
 		setDataSource(url);
@@ -59,8 +66,27 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 	}
 
 	public void prepareAsync() {
-		_buferingDialog.show();
+		isPreparing(true);
+		isStoped(false);
+		_bufferingDialog.show();
 		super.prepareAsync();
+	}
+
+	public void dismissBufferingDialog() {
+		getBufferingDialog().dismiss();
+		_bufferingDialog = null;
+	}
+
+	private ProgressDialog getBufferingDialog() {
+		if (_bufferingDialog == null) {
+			_bufferingDialog = new ProgressDialog(_activity);
+			_bufferingDialog.getContext();
+			_bufferingDialog.setOnCancelListener(this);
+			_bufferingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			_bufferingDialog.setMessage("buffering...");
+		}
+
+		return _bufferingDialog;
 	}
 
 	@Override
@@ -169,17 +195,20 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 	}
 
 	public void onClick(View v) {
-		if (_bPlay !=null && v.getId() == _bPlay.getId()) {
-			if (isStoped() && !isPrepared()) {
+		if (_bPlay != null && v.getId() == _bPlay.getId()) {
+			// !isPreparing()
+
+			if (isStoped() && !isPreparing() && !isPrepared()) {
+				Log.v("sapara", "if (isStoped())");
 				prepareAsync();
-			} else if (!isStoped() && isPrepared()) {
+			} else if (!isStoped() && !isPreparing() && isPrepared()) {
 				start();
-			} else if (!isStoped() && !isPrepared()) {
+			} else if (!isStoped() && !isPreparing() && !isPrepared()) {
 				start();
 			}
-		} else if (_bPause !=null && v.getId() == _bPause.getId()) {
+		} else if (_bPause != null && v.getId() == _bPause.getId()) {
 			pause();
-		} else if (_bStop !=null && v.getId() == _bStop.getId()) {
+		} else if (_bStop != null && v.getId() == _bStop.getId()) {
 			stop();
 			if (_sbSeek != null)
 				_sbSeek.setProgress(0);
@@ -197,10 +226,20 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 		return _isPrepared;
 	}
 
+	public boolean isPreparing() {
+		return _isPreparing;
+	}
+
+	private boolean isPreparing(boolean isPreparing) {
+		_isPreparing = isPreparing;
+		return _isPreparing;
+	}
+
 	public void onPrepared(MediaPlayer mp) {
+		isPreparing(false);
 		isPrepared(true);
 		start();
-			_buferingDialog.hide();
+		getBufferingDialog().hide();
 		if (_sbSeek != null) {
 			_sbSeek.setMax(getDuration());
 			_sbSeek.setProgress(getCurrentPosition());
@@ -243,10 +282,10 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 
 	public boolean onInfo(MediaPlayer mp, int what, int extra) {
 		if (what == MEDIA_INFO_BUFFERING_START) {
-				_buferingDialog.show();
+			getBufferingDialog().show();
 			return true;
 		} else if (what == MEDIA_INFO_BUFFERING_END) {
-				_buferingDialog.hide();
+			getBufferingDialog().hide();
 			return true;
 		}
 		return false;
@@ -284,9 +323,9 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 	@Override
 	public void start() throws IllegalStateException {
 		super.start();
-		setSeekBarTimer();
 		isPrepared(false);
 		isStoped(false);
+		setSeekBarTimer();
 	}
 
 	@Override
@@ -301,10 +340,30 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 
 	@Override
 	public void release() {
-		super.release();
-			_buferingDialog.dismiss();
+		// _bufferingDialog.dismiss();
 		if (_timer != null)
 			_timer.cancel();
+
+		_bPause = null;
+		_bPlay = null;
+		_bStop = null;
+		_tvInfo = null;
+		_tvInfo = null;
+		_timer = null;
+		_sbSeek = null;
+		_bPlay = null;
+		_bPause = null;
+		_bStop = null;
+		_currentPosition = -1;
+		// TODO
+		// _bufferingDialog = null;
+		_isSeeking = false;
+		_isStoped = false;
+		_isPrepared = false;
+		_dataSource = null;
+		_activity = null;
+		_handler = null;
+		super.release();
 	}
 
 	public void onBufferingUpdate(MediaPlayer mp, int percent) {
@@ -313,7 +372,19 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 	}
 
 	public boolean onError(MediaPlayer mp, int what, int extra) {
-		// TODO Auto-generated method stub
+		if (what == MEDIA_ERROR_UNKNOWN) {
+			// _bufferingDialog.show();
+			return true;
+		} else if (what == MEDIA_ERROR_SERVER_DIED) {
+			// _bufferingDialog.hide();
+			return true;
+		}
 		return false;
+	}
+
+	public void onCancel(DialogInterface dialog) {
+		_activity.finish();
+		release();
+		// _activity.onBackPressed()
 	}
 }
