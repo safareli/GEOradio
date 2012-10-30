@@ -16,7 +16,7 @@ public class Helper implements OnClickListener {
 		_activity = activity;
 	}
 
-	public void checkoInternetConnection() {
+	public void checkInternetConnection() {
 		if (!isConnectingToInternet()) {
 			AlertDialog alertDialog = new AlertDialog.Builder(_activity)
 					.setTitle("Internet Connection Error")
