@@ -7,28 +7,37 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.util.Log;
+import android.widget.Toast;
 
-public class Helper implements OnClickListener {
+public class Helper  {
 
-	private Activity _activity;
-
-	public Helper(Activity activity) {
-		_activity = activity;
-	}
-
-	public void checkInternetConnection() {
-		if (!isConnectingToInternet()) {
+	static protected void checkInternetConnection(final Activity _activity) {
+		if (!isConnectingToInternet(_activity)) {
 			AlertDialog alertDialog = new AlertDialog.Builder(_activity)
 					.setTitle("Internet Connection Error")
 					.setMessage(
 							"you aren't connected to internet to use this app you need Internet Connection")
-					.setIcon(R.drawable.fail).setPositiveButton("OK", this)
-					.setCancelable(false).create();
+					.setIcon(R.drawable.fail)
+					.setPositiveButton("OK", new OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							_activity.finish();
+						}
+					}).setCancelable(false).create();
 			alertDialog.show();
 		}
 	}
 
-	private boolean isConnectingToInternet() {
+	static protected void showException(Activity _activity, Exception e) {
+		String text = "exeption> getCause:" + e.getCause() + "StackTrace:"
+				+ e.getStackTrace() + "getMessage:" + e.getMessage();
+
+		Log.d("sapara", "exeption:\n" + e.getStackTrace());
+		Toast.makeText(_activity, text, Toast.LENGTH_LONG * 30).show();//30 wami
+
+	}
+
+	static protected boolean isConnectingToInternet(Activity _activity) {
 		ConnectivityManager connectivity = (ConnectivityManager) _activity
 				.getSystemService(Context.CONNECTIVITY_SERVICE);
 		if (connectivity != null) {
@@ -42,10 +51,6 @@ public class Helper implements OnClickListener {
 			}
 		}
 		return false;
-	}
-
-	public void onClick(DialogInterface dialog, int which) {
-		_activity.finish();
 	}
 
 }

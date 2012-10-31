@@ -1,5 +1,6 @@
 package i.safareli.georadio;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.ListActivity;
@@ -15,20 +16,18 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 public class RadioListActivity extends ListActivity {
+ 
 
-	private Helper help = new Helper(this);
-
-	// @SuppressWarnings("deprecation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_radio_list);
-		help.checkInternetConnection();
+		Helper.checkInternetConnection(this);
 
 		if (!MyApplication.isSetRadioList()) {
 			new JSONTask().execute(MyApplication.JSON_URL);
 		} else {
-
+			doJob();
 		}
 
 	}
@@ -49,14 +48,17 @@ public class RadioListActivity extends ListActivity {
 		@Override
 		protected void onPostExecute(JSONObject jsonResult) {
 			super.onPostExecute(jsonResult);
-			MyApplication.setRadioList(jsonResult);
+			try {
+				MyApplication.setRadioList(jsonResult);
+			} catch (JSONException e) {
+	        	Helper.showException(RadioListActivity.this, e);
+			}
 			doJob();
 		}
 
 	}
 
 	public void doJob() {
-
 		ListAdapter adapter = new SimpleAdapter(RadioListActivity.this,
 				MyApplication.getRadioList(), R.layout.list_item, new String[] {
 						MyApplication.TAG_NAME, MyApplication.TAG_URL },

@@ -6,6 +6,10 @@
     <uses-sdk
         android:minSdkVersion="11"
         android:targetSdkVersion="15" />
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    
     <!-- Internet Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -25,6 +29,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".SingleRadioActivity" >
+        </activity>
+        <activity android:name=".RecordTest" >
         </activity>
     </application>
 

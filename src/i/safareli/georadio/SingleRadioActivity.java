@@ -37,7 +37,6 @@ public class SingleRadioActivity extends Activity {
 
 		Log.v("sapara", "onCreate");
 		setUpVariables();
-
 		try {
 			mediaPlayer = MyApplication.setPlayer(url, this);
 			setPlayerControler();
@@ -48,8 +47,7 @@ public class SingleRadioActivity extends Activity {
 				mediaPlayer.start();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			Log.v("sapara", "MediaPlayer Exception", e);
+			Helper.showException(this, e);
 		}
 	}
 
