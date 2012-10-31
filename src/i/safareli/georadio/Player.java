@@ -32,18 +32,30 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 
 	protected View _bPlay, _bPause, _bStop;
 
-	protected final int HOUR = 60 * 60 * 1000;
-	protected final int MINUTE = 60 * 1000;
-	protected final int SECOND = 1000;
-	protected int _currentPosition;
-	protected ProgressDialog _bufferingDialog;
-	protected boolean _isSeeking = false;
-	protected boolean _isStoped = true;
-	protected boolean _isPrepared = false;
-	protected String _dataSource;
-	protected Activity _activity;
-	protected Handler _handler;
-	protected boolean _isPreparing;
+	private static final int HOUR = 60 * 60 * 1000;
+	private static final int MINUTE = 60 * 1000;
+	private static final int SECOND = 1000;
+	private int _currentPosition;
+	private ProgressDialog _bufferingDialog;
+	private boolean _isSeeking = false;
+	// private boolean _isStoped = true;
+	// private boolean _isPrepared = false;
+	private String _dataSource;
+	private Activity _activity;
+	private Handler _handler;
+	// private boolean _isPreparing;
+	protected static final int UNIC_INT = 54561736;
+	protected static final int STATE_IDLE = 1 * UNIC_INT;
+	protected static final int STATE_INITIALIZED = 2 * UNIC_INT;
+	protected static final int STATE_PREPARING = 3 * UNIC_INT;
+	protected static final int STATE_PREPARED = 4 * UNIC_INT;
+	protected static final int STATE_STARTED = 5 * UNIC_INT;
+	protected static final int STATE_PAUSED = 6 * UNIC_INT;
+	protected static final int STATE_STOPPED = 7 * UNIC_INT;
+	protected static final int STATE_END = 8 * UNIC_INT;
+	protected static final int STATE_ERROR = 9 * UNIC_INT;
+	protected static final int STATE_PLAYBACKCOMPLETED = 10 * UNIC_INT;
+	private int _corentState = STATE_IDLE;
 
 	public Player(String url, Activity activity)
 			throws IllegalArgumentException, SecurityException,
@@ -51,11 +63,6 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 		super();
 		// TODO change context of dialog
 		_activity = activity;
-		_bufferingDialog = new ProgressDialog(_activity);
-		_bufferingDialog.getContext();
-		_bufferingDialog.setOnCancelListener(this);
-		_bufferingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		_bufferingDialog.setMessage("buffering...");
 
 		setAudioStreamType(AudioManager.STREAM_MUSIC);
 		setDataSource(url);
@@ -65,10 +72,22 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 		setOnBufferingUpdateListener(this);
 	}
 
+	private void setState(int state) {
+		_corentState = state;
+	}
+
+	public boolean isInState(int state) {
+		if (state == _corentState) {
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+
 	public void prepareAsync() {
-		isPreparing(true);
-		isStoped(false);
-		_bufferingDialog.show();
+		setState(STATE_PREPARING);
+		getBufferingDialog().show();
 		super.prepareAsync();
 	}
 
@@ -93,6 +112,8 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 	public void setDataSource(String path) throws IOException,
 			IllegalArgumentException, SecurityException, IllegalStateException {
 		super.setDataSource(path);
+
+		setState(STATE_INITIALIZED);
 		_dataSource = path;
 	}
 
@@ -106,7 +127,7 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 	}
 
 	public String getProgressText() {
-		if (!isStoped()) {
+		if (!isInState(STATE_STOPPED)) {
 			int currentPosition;
 			int durationInMillis = getDuration();
 			if (_currentPosition != -1) {
@@ -157,15 +178,6 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 		return _isSeeking;
 	}
 
-	public boolean isStoped() {
-		return _isStoped;
-	}
-
-	protected boolean isStoped(boolean Stoped) {
-		_isStoped = Stoped;
-		return _isStoped;
-	}
-
 	public void setSeekBar(SeekBar seekBar) {
 		_sbSeek = seekBar;
 		_sbSeek.setOnSeekBarChangeListener(this);
@@ -198,17 +210,14 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 		if (_bPlay != null && v.getId() == _bPlay.getId()) {
 			// !isPreparing()
 
-			if (isStoped() && !isPreparing() && !isPrepared()) {
-				Log.v("sapara", "if (isStoped())");
+			if (isInState(STATE_INITIALIZED) || isInState(STATE_STOPPED)) {
 				prepareAsync();
-			} else if (!isStoped() && !isPreparing() && isPrepared()) {
-				start();
-			} else if (!isStoped() && !isPreparing() && !isPrepared()) {
+			} else if (isInState(STATE_PAUSED) || isInState(STATE_PREPARED) || isInState(STATE_PLAYBACKCOMPLETED) ) {
 				start();
 			}
-		} else if (_bPause != null && v.getId() == _bPause.getId()) {
+		} else if (_bPause != null && v.getId() == _bPause.getId() && isInState(STATE_STARTED)) {
 			pause();
-		} else if (_bStop != null && v.getId() == _bStop.getId()) {
+		} else if (_bStop != null && v.getId() == _bStop.getId() && !isInState(STATE_STOPPED)) {
 			stop();
 			if (_sbSeek != null)
 				_sbSeek.setProgress(0);
@@ -217,29 +226,11 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 		}
 	}
 
-	public boolean isPrepared() {
-		return _isPrepared;
-	}
-
-	private boolean isPrepared(boolean isPrepared) {
-		_isPrepared = isPrepared;
-		return _isPrepared;
-	}
-
-	public boolean isPreparing() {
-		return _isPreparing;
-	}
-
-	private boolean isPreparing(boolean isPreparing) {
-		_isPreparing = isPreparing;
-		return _isPreparing;
-	}
 
 	public void onPrepared(MediaPlayer mp) {
-		isPreparing(false);
-		isPrepared(true);
+		setState(STATE_PREPARED);
 		start();
-		getBufferingDialog().hide();
+		getBufferingDialog().dismiss();
 		if (_sbSeek != null) {
 			_sbSeek.setMax(getDuration());
 			_sbSeek.setProgress(getCurrentPosition());
@@ -257,7 +248,7 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 						_handler.post(new Runnable() {
 
 							public void run() {
-								if (!isSeeking() && !isStoped()) {
+								if (!isSeeking() && isPlaying()) {
 									if (_sbSeek != null)
 										_sbSeek.setProgress(getCurrentPosition());
 									if (_tvInfo != null)
@@ -285,7 +276,7 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 			getBufferingDialog().show();
 			return true;
 		} else if (what == MEDIA_INFO_BUFFERING_END) {
-			getBufferingDialog().hide();
+			getBufferingDialog().dismiss();
 			return true;
 		}
 		return false;
@@ -293,7 +284,7 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 
 	public void onProgressChanged(SeekBar seekBar, int progress,
 			boolean fromUser) {
-		if (fromUser && !isStoped()) {
+		if (fromUser && (isInState(STATE_STARTED) || isInState(STATE_PLAYBACKCOMPLETED) || isInState(STATE_PAUSED))) {
 			if (!isPlaying()) {
 				seekTo(progress);
 			}
@@ -308,7 +299,7 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 
 	public void onStopTrackingTouch(SeekBar seekBar) {
 		isSeeking(false);
-		if (isPlaying() && !isStoped()) {
+		if (isPlaying()) {
 			seekTo(seekBar.getProgress());
 		}
 	}
@@ -316,6 +307,7 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 	@Override
 	public void pause() throws IllegalStateException {
 		super.pause();
+		setState(STATE_PAUSED);
 		if (_timer != null)
 			_timer.cancel();
 	}
@@ -323,19 +315,20 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 	@Override
 	public void start() throws IllegalStateException {
 		super.start();
-		isPrepared(false);
-		isStoped(false);
+		setState(STATE_STARTED);
 		setSeekBarTimer();
 	}
 
 	@Override
 	public void stop() throws IllegalStateException {
-		seekTo(0);
-		super.stop();
-		isStoped(true);
-		isPrepared(false);
+		if (getCurrentPosition() > 0) {
+			seekTo(0);
+		}
+		MyApplication.cancelNotification();
+		setState(STATE_STOPPED);
 		if (_timer != null)
 			_timer.cancel();
+		super.stop();
 	}
 
 	@Override
@@ -343,7 +336,8 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 		// _bufferingDialog.dismiss();
 		if (_timer != null)
 			_timer.cancel();
-
+		
+		MyApplication.cancelNotification();
 		_bPause = null;
 		_bPlay = null;
 		_bStop = null;
@@ -355,11 +349,7 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 		_bPause = null;
 		_bStop = null;
 		_currentPosition = -1;
-		// TODO
-		// _bufferingDialog = null;
-		_isSeeking = false;
-		_isStoped = false;
-		_isPrepared = false;
+		setState(STATE_END);
 		_dataSource = null;
 		_activity = null;
 		_handler = null;
@@ -372,7 +362,9 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 	}
 
 	public boolean onError(MediaPlayer mp, int what, int extra) {
+		setState(STATE_ERROR);
 		if (what == MEDIA_ERROR_UNKNOWN) {
+			//TODO
 			// _bufferingDialog.show();
 			return true;
 		} else if (what == MEDIA_ERROR_SERVER_DIED) {
