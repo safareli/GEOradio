@@ -63,16 +63,22 @@ public class MyApplication extends Application {
 	public static void setRadioList(JSONObject json) throws JSONException {
 		radioList = new ArrayList<HashMap<String, String>>();
 		JSONArray radios;
-		radios = json.getJSONArray(TAG_RADIOS);
-		for (int i = 0; i < radios.length(); i++) {
-			JSONObject c = radios.getJSONObject(i);
+		if (json != null) {
+			radios = json.getJSONArray(TAG_RADIOS);
+			for (int i = 0; i < radios.length(); i++) {
+				JSONObject c = radios.getJSONObject(i);
 
-			HashMap<String, String> map = new HashMap<String, String>();
-			map.put(TAG_NAME, c.getString(TAG_NAME));
-			map.put(TAG_URL, c.getString(TAG_URL));
-			Log.v("sapara",
-					c.getString(TAG_NAME) + ":::" + c.getString(TAG_URL));
-			radioList.add(map);
+				HashMap<String, String> map = new HashMap<String, String>();
+				map.put(TAG_NAME, c.getString(TAG_NAME));
+				map.put(TAG_URL, c.getString(TAG_URL));
+				Log.v("sapara",
+						c.getString(TAG_NAME) + ":::" + c.getString(TAG_URL));
+				radioList.add(map);
+			}
+
+		}else {
+			//TODO throw Exception
+			//new Exception(new Throwable("json == null setRadioList"))
 		}
 	}
 
@@ -95,16 +101,16 @@ public class MyApplication extends Application {
 		PendingIntent pIntent = PendingIntent.getActivity(activity, 0, intent,
 				PendingIntent.FLAG_CANCEL_CURRENT);
 
-		
-		Intent intentRecord = new Intent(activity, RecordTest.class); 		
-		PendingIntent pIntentRecord = PendingIntent.getActivity(activity, 0, intentRecord, 0);
-		
+		Intent intentRecord = new Intent(activity, RecordTest.class);
+		PendingIntent pIntentRecord = PendingIntent.getActivity(activity, 0,
+				intentRecord, 0);
+
 		// Build notification
 		Notification noti = new NotificationCompat.Builder(activity)
 				.setContentTitle("RADIO: " + getParameters(TAG_NAME, position))
 				.setContentText(getParameters(TAG_URL, position))
 				.setSmallIcon(R.drawable.ic_launcher).setContentIntent(pIntent)
-				 .addAction(R.drawable.fail, "record", pIntentRecord)
+				.addAction(R.drawable.fail, "record", pIntentRecord)
 				// .addAction(R.drawable.ic_launcher, "stop", pPlayIntent)
 				.build();
 

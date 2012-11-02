@@ -26,11 +26,11 @@ public class SingleRadioActivity extends Activity {
 		Intent in = getIntent();
 		// Get JSON values from previous intent
 		position = in.getIntExtra(MyApplication.KAY_POSITION, 0);
-		
-		//Get radio name and url
-		name = MyApplication.getParameters( MyApplication.TAG_NAME ,position);
-		url = MyApplication.getParameters( MyApplication.TAG_URL ,position);
-		
+
+		// Get radio name and url
+		name = MyApplication.getParameters(MyApplication.TAG_NAME, position);
+		url = MyApplication.getParameters(MyApplication.TAG_URL, position);
+
 		// Displaying all values on the screen
 		TextView tvInfo = (TextView) findViewById(R.id.tvInfo);
 		tvInfo.setText(name + "\n " + url);
@@ -40,10 +40,13 @@ public class SingleRadioActivity extends Activity {
 		try {
 			mediaPlayer = MyApplication.setPlayer(url, this);
 			setPlayerControler();
-			if (mediaPlayer.isInState(Player.STATE_INITIALIZED) || mediaPlayer.isInState(Player.STATE_STOPPED)) {
+			if (mediaPlayer.isInState(Player.STATE_INITIALIZED)
+					|| mediaPlayer.isInState(Player.STATE_STOPPED)) {
 				mediaPlayer.prepareAsync();
 				MyApplication.setNotification(this, position);
-			}else if (mediaPlayer.isInState(Player.STATE_PAUSED) || mediaPlayer.isInState(Player.STATE_PREPARED) || mediaPlayer.isInState(Player.STATE_PLAYBACKCOMPLETED)) {
+			} else if (mediaPlayer.isInState(Player.STATE_PAUSED)
+					|| mediaPlayer.isInState(Player.STATE_PREPARED)
+					|| mediaPlayer.isInState(Player.STATE_PLAYBACKCOMPLETED)) {
 				mediaPlayer.start();
 			}
 		} catch (Exception e) {
@@ -69,11 +72,17 @@ public class SingleRadioActivity extends Activity {
 		mediaPlayer.setHandler(MyApplication.getHandler());
 	}// END setPlayerControler
 
-	// @Override
-	// protected void onPause() {
-	// Log.v("sapara", "onPause");
-	// mediaPlayer.release();
-	// mediaPlayer = null;
-	// super.onPause();
-	// }// END onPause
+	@Override
+	protected void onPause() {
+		super.onPause();
+		finish();
+	}// END onPause
+
+	@Override
+	public void onBackPressed() {
+		// TODO Auto-generated method stub
+		Intent intent = new Intent(getApplicationContext(), RadioListActivity.class);
+		startActivity(intent);
+		super.onBackPressed();
+	}
 }
