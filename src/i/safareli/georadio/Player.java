@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.media.AudioManager;
@@ -15,12 +15,12 @@ import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnInfoListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class Player extends MediaPlayer implements OnPreparedListener,
 		OnInfoListener, OnClickListener, OnSeekBarChangeListener,
@@ -38,31 +38,28 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 	private int _currentPosition;
 	private ProgressDialog _bufferingDialog;
 	private boolean _isSeeking = false;
-	// private boolean _isStoped = true;
-	// private boolean _isPrepared = false;
 	private String _dataSource;
-	private Activity _activity;
 	private Handler _handler;
-	// private boolean _isPreparing;
-	protected static final int UNIC_INT = 54561736;
-	protected static final int STATE_IDLE = 1 * UNIC_INT;
-	protected static final int STATE_INITIALIZED = 2 * UNIC_INT;
-	protected static final int STATE_PREPARING = 3 * UNIC_INT;
-	protected static final int STATE_PREPARED = 4 * UNIC_INT;
-	protected static final int STATE_STARTED = 5 * UNIC_INT;
-	protected static final int STATE_PAUSED = 6 * UNIC_INT;
-	protected static final int STATE_STOPPED = 7 * UNIC_INT;
-	protected static final int STATE_END = 8 * UNIC_INT;
-	protected static final int STATE_ERROR = 9 * UNIC_INT;
-	protected static final int STATE_PLAYBACKCOMPLETED = 10 * UNIC_INT;
+	protected static final int unic_int = 54561736;
+	protected static final int STATE_IDLE = 1 + unic_int;
+	protected static final int STATE_INITIALIZED = 2 + unic_int;
+	protected static final int STATE_PREPARING = 3 + unic_int;
+	protected static final int STATE_PREPARED = 4 + unic_int;
+	protected static final int STATE_STARTED = 5 + unic_int;
+	protected static final int STATE_PAUSED = 6 + unic_int;
+	protected static final int STATE_STOPPED = 7 + unic_int;
+	protected static final int STATE_END = 8 + unic_int;
+	protected static final int STATE_ERROR = 9 + unic_int;
+	protected static final int STATE_PLAYBACKCOMPLETED = 10 + unic_int;
+	protected static final int CONTROLLER_STOP = 11 + unic_int;
+	protected static final int CONTROLLER_NEXT = 12 + unic_int;
+	protected static final int CONTROLLER_PREVIOUS = 13 + unic_int;
 	private int _corentState = STATE_IDLE;
 
-	public Player(String url, Activity activity)
-			throws IllegalArgumentException, SecurityException,
-			IllegalStateException, IOException {
+	public Player(String url) throws IllegalArgumentException,
+			SecurityException, IllegalStateException, IOException {
 		super();
 		// TODO change context of dialog
-		_activity = activity;
 
 		setAudioStreamType(AudioManager.STREAM_MUSIC);
 		setDataSource(url);
@@ -87,22 +84,34 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 
 	public void prepareAsync() {
 		setState(STATE_PREPARING);
-		getBufferingDialog().show();
+		showBufferingDialog();
 		super.prepareAsync();
 	}
 
 	public void dismissBufferingDialog() {
-		getBufferingDialog().dismiss();
-		_bufferingDialog = null;
+		if (_bufferingDialog != null) {
+			_bufferingDialog.dismiss();
+			_bufferingDialog = null;
+		}
+	}
+
+	private void showBufferingDialog() {
+		if (MyApplication.getActivity() == null) {
+			Toast.makeText(MyApplication.getAppContext(), "Buffering...",
+					Toast.LENGTH_LONG).show();
+		} else {
+			getBufferingDialog().show();
+		}
 	}
 
 	private ProgressDialog getBufferingDialog() {
 		if (_bufferingDialog == null) {
-			_bufferingDialog = new ProgressDialog(_activity);
-			_bufferingDialog.getContext();
+			_bufferingDialog = new ProgressDialog(MyApplication.getActivity());
+			_bufferingDialog.getContext().equals(
+					(Context) MyApplication.getActivity());
 			_bufferingDialog.setOnCancelListener(this);
 			_bufferingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-			_bufferingDialog.setMessage("buffering...");
+			_bufferingDialog.setMessage("Buffering...");
 		}
 
 		return _bufferingDialog;
@@ -212,12 +221,15 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 
 			if (isInState(STATE_INITIALIZED) || isInState(STATE_STOPPED)) {
 				prepareAsync();
-			} else if (isInState(STATE_PAUSED) || isInState(STATE_PREPARED) || isInState(STATE_PLAYBACKCOMPLETED) ) {
+			} else if (isInState(STATE_PAUSED) || isInState(STATE_PREPARED)
+					|| isInState(STATE_PLAYBACKCOMPLETED)) {
 				start();
 			}
-		} else if (_bPause != null && v.getId() == _bPause.getId() && isInState(STATE_STARTED)) {
+		} else if (_bPause != null && v.getId() == _bPause.getId()
+				&& isInState(STATE_STARTED)) {
 			pause();
-		} else if (_bStop != null && v.getId() == _bStop.getId() && !isInState(STATE_STOPPED)) {
+		} else if (_bStop != null && v.getId() == _bStop.getId()
+				&& !isInState(STATE_STOPPED)) {
 			stop();
 			if (_sbSeek != null)
 				_sbSeek.setProgress(0);
@@ -226,11 +238,10 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 		}
 	}
 
-
 	public void onPrepared(MediaPlayer mp) {
 		setState(STATE_PREPARED);
 		start();
-		getBufferingDialog().dismiss();
+		dismissBufferingDialog();
 		if (_sbSeek != null) {
 			_sbSeek.setMax(getDuration());
 			_sbSeek.setProgress(getCurrentPosition());
@@ -263,8 +274,7 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 							Thread.sleep(900);
 						}
 					} catch (Exception e) {
-						e.printStackTrace();
-						Log.v("sapara", "Thread Exception", e);
+						Helper.showException("Thread Exception", e);
 					}
 				}
 			}, 0, 100);
@@ -273,10 +283,10 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 
 	public boolean onInfo(MediaPlayer mp, int what, int extra) {
 		if (what == MEDIA_INFO_BUFFERING_START) {
-			getBufferingDialog().show();
+			showBufferingDialog();
 			return true;
 		} else if (what == MEDIA_INFO_BUFFERING_END) {
-			getBufferingDialog().dismiss();
+			dismissBufferingDialog();
 			return true;
 		}
 		return false;
@@ -284,7 +294,9 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 
 	public void onProgressChanged(SeekBar seekBar, int progress,
 			boolean fromUser) {
-		if (fromUser && (isInState(STATE_STARTED) || isInState(STATE_PLAYBACKCOMPLETED) || isInState(STATE_PAUSED))) {
+		if (fromUser
+				&& (isInState(STATE_STARTED)
+						|| isInState(STATE_PLAYBACKCOMPLETED) || isInState(STATE_PAUSED))) {
 			if (!isPlaying()) {
 				seekTo(progress);
 			}
@@ -336,7 +348,7 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 		// _bufferingDialog.dismiss();
 		if (_timer != null)
 			_timer.cancel();
-		
+
 		MyApplication.cancelNotification();
 		_bPause = null;
 		_bPlay = null;
@@ -351,7 +363,6 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 		_currentPosition = -1;
 		setState(STATE_END);
 		_dataSource = null;
-		_activity = null;
 		_handler = null;
 		super.release();
 	}
@@ -363,20 +374,27 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 
 	public boolean onError(MediaPlayer mp, int what, int extra) {
 		setState(STATE_ERROR);
+		MyApplication.cancelNotification();
 		if (what == MEDIA_ERROR_UNKNOWN) {
-			//TODO
-			// _bufferingDialog.show();
+			Toast.makeText(MyApplication.getAppContext(),
+					"MEDIA_ERROR_UNKNOWN", Toast.LENGTH_LONG).show();
 			return true;
 		} else if (what == MEDIA_ERROR_SERVER_DIED) {
-			// _bufferingDialog.hide();
+			Toast.makeText(MyApplication.getAppContext(),
+					"MEDIA_ERROR_SERVER_DIED", Toast.LENGTH_LONG).show();
+			return true;
+		} else if (what == MEDIA_ERROR_UNKNOWN) {
+			Toast.makeText(MyApplication.getAppContext(),
+					"MEDIA_ERROR_SERVER_DIED", Toast.LENGTH_LONG).show();
 			return true;
 		}
 		return false;
 	}
 
 	public void onCancel(DialogInterface dialog) {
-		_activity.finish();
+		if (MyApplication.getActivity() != null) {
+			MyApplication.getActivity().finish();
+		}
 		release();
-		// _activity.onBackPressed()
 	}
 }

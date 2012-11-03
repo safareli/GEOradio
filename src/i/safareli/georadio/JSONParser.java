@@ -18,11 +18,11 @@ import android.util.Log;
 
 public class JSONParser {
 
-	static InputStream is = null;
-	static JSONObject jObj = null;
-	static String json = "";
+	private static InputStream is = null;
+	private static JSONObject jObj = null;
+	private static String json = "";
 
-	public JSONObject getJSONFromUrl(String url) {
+	public static JSONObject getJSONFromUrl(String url) {
 
 		// Making HTTP request
 		try {

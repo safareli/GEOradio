@@ -28,13 +28,17 @@ public class Helper  {
 		}
 	}
 
-	static protected void showException(Activity _activity, Exception e) {
-		String text = "exeption> getCause:" + e.getCause() + "StackTrace:"
-				+ e.getStackTrace() + "getMessage:" + e.getMessage();
-
-		Log.d("sapara", "exeption:\n" + e.getStackTrace());
-		Toast.makeText(_activity, text, Toast.LENGTH_LONG * 30).show();//30 wami
-
+	static protected void showException(Exception e) { 
+		Log.e("sapara", "exeption", e);
+		Toast.makeText(MyApplication.getAppContext(), "There is an exeption", Toast.LENGTH_SHORT).show();
+		Toast.makeText(MyApplication.getAppContext(), "Exeption Message is :\n"+e.getMessage(), Toast.LENGTH_LONG).show(); 
+	}
+	static protected void showException(String title,Exception e) { 
+		Log.d("sapara", title);
+		Log.e("sapara", "exeption "+title, e);
+		Toast.makeText(MyApplication.getAppContext(), "There is an exeption", Toast.LENGTH_SHORT).show();
+		Toast.makeText(MyApplication.getAppContext(), title, Toast.LENGTH_SHORT).show();
+		Toast.makeText(MyApplication.getAppContext(), "Exeption Message is :\n"+e.getMessage(), Toast.LENGTH_LONG).show(); 
 	}
 
 	static protected boolean isConnectingToInternet(Activity _activity) {

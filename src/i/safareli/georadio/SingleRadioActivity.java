@@ -1,5 +1,7 @@
 package i.safareli.georadio;
 
+import java.io.IOException;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -21,12 +23,13 @@ public class SingleRadioActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_player);
+		MyApplication.setActivity(this);
 
 		// getting intent data
-		Intent in = getIntent();
+		// Intent in = getIntent();
 		// Get JSON values from previous intent
-		position = in.getIntExtra(MyApplication.KAY_POSITION, 0);
-
+		// position = in.getIntExtra(MyApplication.KAY_POSITION, 0);
+		position = MyApplication.getCurrentAudioPosition();
 		// Get radio name and url
 		name = MyApplication.getParameters(MyApplication.TAG_NAME, position);
 		url = MyApplication.getParameters(MyApplication.TAG_URL, position);
@@ -38,26 +41,27 @@ public class SingleRadioActivity extends Activity {
 		Log.v("sapara", "onCreate");
 		setUpVariables();
 		try {
-			mediaPlayer = MyApplication.setPlayer(url, this);
+			mediaPlayer = MyApplication.setPlayer(url);
 			setPlayerControler();
 			if (mediaPlayer.isInState(Player.STATE_INITIALIZED)
 					|| mediaPlayer.isInState(Player.STATE_STOPPED)) {
-				mediaPlayer.prepareAsync();
-				MyApplication.setNotification(this, position);
+				mediaPlayer.prepareAsync(); 
 			} else if (mediaPlayer.isInState(Player.STATE_PAUSED)
 					|| mediaPlayer.isInState(Player.STATE_PREPARED)
 					|| mediaPlayer.isInState(Player.STATE_PLAYBACKCOMPLETED)) {
 				mediaPlayer.start();
 			}
+		} catch (IllegalArgumentException e) {
+			Helper.showException("IllegalArgumentException", e);
+		} catch (SecurityException e) {
+			Helper.showException("SecurityException", e);
+		} catch (IllegalStateException e) {
+			Helper.showException("IllegalStateException", e);
+		} catch (IOException e) {
+			Helper.showException("IOException", e);
 		} catch (Exception e) {
-			Helper.showException(this, e);
+			Helper.showException(e);
 		}
-	}
-
-	@Override
-	protected void onDestroy() {
-		mediaPlayer.dismissBufferingDialog();
-		super.onDestroy();
 	}
 
 	public void setUpVariables() {
@@ -74,15 +78,17 @@ public class SingleRadioActivity extends Activity {
 
 	@Override
 	protected void onPause() {
+		mediaPlayer.dismissBufferingDialog();
+		MyApplication.setActivity(null);
 		super.onPause();
 		finish();
 	}// END onPause
 
 	@Override
 	public void onBackPressed() {
-		// TODO Auto-generated method stub
-		Intent intent = new Intent(getApplicationContext(), RadioListActivity.class);
+		Intent intent = new Intent(getApplicationContext(),
+				RadioListActivity.class);
 		startActivity(intent);
-		super.onBackPressed();
+		// super.onBackPressed();
 	}
 }

@@ -16,12 +16,13 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 public class RadioListActivity extends ListActivity {
- 
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_radio_list);
+		MyApplication.setActivity(this);
+		MyApplication.cancelNotification();
 		Helper.checkInternetConnection(this);
 
 		if (!MyApplication.isSetRadioList()) {
@@ -42,7 +43,7 @@ public class RadioListActivity extends ListActivity {
 
 		@Override
 		protected JSONObject doInBackground(String... params) {
-			return new JSONParser().getJSONFromUrl(params[0]);
+			return JSONParser.getJSONFromUrl(params[0]);
 		}
 
 		@Override
@@ -51,7 +52,7 @@ public class RadioListActivity extends ListActivity {
 			try {
 				MyApplication.setRadioList(jsonResult);
 			} catch (JSONException e) {
-	        	Helper.showException(RadioListActivity.this, e);
+				Helper.showException(e);
 			}
 			doJob();
 		}
@@ -74,15 +75,36 @@ public class RadioListActivity extends ListActivity {
 
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				
+
 				// Starting new intent
 				Intent in = new Intent(getApplicationContext(),
 						SingleRadioActivity.class);
-				in.putExtra(MyApplication.KAY_POSITION, position);
+				MyApplication.setCurrentAudioPosition(position);
+				// in.putExtra(MyApplication.KAY_POSITION, position);
 				startActivity(in);
 
 			}
+
 		});
 
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		MyApplication.setActivity(null);
+		finish();
+	}
+
+	@Override
+	public void onBackPressed() {
+		if (MyApplication.getPlayer() != null
+				&& MyApplication.getPlayer().isPlaying()) {
+			MyApplication.setNotification();
+		}
+
+		// super.onBackPressed();
+		MyApplication.setActivity(null);
+		finish();
 	}
 }

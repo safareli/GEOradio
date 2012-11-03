@@ -20,114 +20,151 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 public class MyApplication extends Application {
-	protected static Player mp = null;
-	protected static Handler handler;
-	protected static ArrayList<HashMap<String, String>> radioList;
+	private static Player _mp = null;
+	private static Handler _handler;
+	private static ArrayList<HashMap<String, String>> _radioList;
+	private static Activity _activity;
+	private static Context _context;
+	private static NotificationManager _notificationManager;
+	private static int _currentAudioPosition;
 
 	protected static final String TAG_RADIOS = "radios";
 	protected static final String TAG_NAME = "name";
 	protected static final String TAG_URL = "url";
 	protected static final String JSON_URL = "http://safareli.github.com/radios.json";
 	protected static final String KAY_POSITION = "position";
+	protected static final String KAY_CONTROLLER_OPTIONS = "controllerOptions";
 	protected static final int NOTIFICATION_ID = 0;
-	protected static NotificationManager notificationManager;
 
-	public static Player setPlayer(String url, Activity activity)
-			throws IllegalArgumentException, SecurityException,
-			IllegalStateException, IOException {
-		if (mp == null) {
-			mp = new Player(url, activity);
-		} else if (mp.getDataSource() == null
-				|| !mp.getDataSource().equals(url)) {
-			mp.release();
-			mp = new Player(url, activity);
+	public static Player setPlayer(String url) throws IllegalArgumentException,
+			SecurityException, IllegalStateException, IOException, Exception {
+		Log.d("sapara", url);
+		if (_mp == null) {
+			_mp = new Player(url);
+		} else if (_mp.getDataSource() == null
+				|| !_mp.getDataSource().equals(url)) {
+			_mp.release();
+			_mp = new Player(url);
 		}
-		return mp;
+		return _mp;
+	}
+
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		_context = getApplicationContext();
+	}
+
+	public static Context getAppContext() {
+		return _context;
+	}
+
+	public static void setActivity(Activity activity) {
+		_activity = activity;
+	}
+
+	public static Activity getActivity() {
+		return _activity;
 	}
 
 	public static Player getPlayer() {
-		return mp;
+		return _mp;
 	}
 
 	public static Handler getHandler() {
-		if (handler == null) {
-			handler = new Handler();
+		if (_handler == null) {
+			_handler = new Handler();
 		}
-		return handler;
+		return _handler;
 	}
 
 	public static ArrayList<HashMap<String, String>> getRadioList() {
-		return radioList;
+		return _radioList;
 	}
 
 	public static void setRadioList(JSONObject json) throws JSONException {
-		radioList = new ArrayList<HashMap<String, String>>();
+		_radioList = new ArrayList<HashMap<String, String>>();
 		JSONArray radios;
-		if (json != null) {
-			radios = json.getJSONArray(TAG_RADIOS);
-			for (int i = 0; i < radios.length(); i++) {
-				JSONObject c = radios.getJSONObject(i);
+		radios = json.getJSONArray(TAG_RADIOS);
+		for (int i = 0; i < radios.length(); i++) {
+			JSONObject c = radios.getJSONObject(i);
 
-				HashMap<String, String> map = new HashMap<String, String>();
-				map.put(TAG_NAME, c.getString(TAG_NAME));
-				map.put(TAG_URL, c.getString(TAG_URL));
-				Log.v("sapara",
-						c.getString(TAG_NAME) + ":::" + c.getString(TAG_URL));
-				radioList.add(map);
-			}
-
-		}else {
-			//TODO throw Exception
-			//new Exception(new Throwable("json == null setRadioList"))
+			HashMap<String, String> map = new HashMap<String, String>();
+			map.put(TAG_NAME, c.getString(TAG_NAME));
+			map.put(TAG_URL, c.getString(TAG_URL));
+			Log.v("sapara",
+					c.getString(TAG_NAME) + ":::" + c.getString(TAG_URL));
+			_radioList.add(map);
 		}
+
 	}
 
 	public static boolean isSetRadioList() {
-		if (radioList == null) {
+		if (_radioList == null) {
 			return false;
 		} else {
 			return true;
 		}
 	}
 
-	public static void setNotification(Activity activity, int position) {
+	public static void setNotification() {
+
 		// Set Notification Manager
-		notificationManager = (NotificationManager) activity
+		_notificationManager = (NotificationManager) _context
 				.getSystemService(Context.NOTIFICATION_SERVICE);
 
 		// Prepare intent which is triggered if the notification is selected
-		Intent intent = new Intent(activity, SingleRadioActivity.class);
-		intent.putExtra(MyApplication.KAY_POSITION, position);
-		PendingIntent pIntent = PendingIntent.getActivity(activity, 0, intent,
-				PendingIntent.FLAG_CANCEL_CURRENT);
+		Intent intent = new Intent(_context, SingleRadioActivity.class);
+		PendingIntent pIntent = PendingIntent.getActivity(_context, 0, intent,
+				PendingIntent.FLAG_UPDATE_CURRENT);
 
-		Intent intentRecord = new Intent(activity, RecordTest.class);
-		PendingIntent pIntentRecord = PendingIntent.getActivity(activity, 0,
-				intentRecord, 0);
+		// intent for stop button
+		Intent Stop = new Intent(_context, PlayerBroadcastController.class);
+		Stop.putExtra(MyApplication.KAY_CONTROLLER_OPTIONS,
+				Player.CONTROLLER_STOP);
+		PendingIntent pStop = PendingIntent.getBroadcast(_context, 0, Stop,
+				PendingIntent.FLAG_UPDATE_CURRENT);
+
+		// intent for Previous button
+		Intent Previous = new Intent(_context, PlayerBroadcastController.class);
+		Previous.putExtra(MyApplication.KAY_CONTROLLER_OPTIONS,
+				Player.CONTROLLER_PREVIOUS);
+		PendingIntent pPrevious = PendingIntent.getBroadcast(_context, 0,
+				Previous, PendingIntent.FLAG_UPDATE_CURRENT);
+
+		// intent for Next button
+		Intent Next = new Intent(_context, PlayerBroadcastController.class);
+		Next.putExtra(MyApplication.KAY_CONTROLLER_OPTIONS,
+				Player.CONTROLLER_NEXT);
+		PendingIntent pNext = PendingIntent.getBroadcast(_context, 0, Next,
+				PendingIntent.FLAG_UPDATE_CURRENT);
 
 		// Build notification
-		Notification noti = new NotificationCompat.Builder(activity)
-				.setContentTitle("RADIO: " + getParameters(TAG_NAME, position))
-				.setContentText(getParameters(TAG_URL, position))
+		Notification noti = new NotificationCompat.Builder(_context)
+				.setContentTitle(
+						"RADIO: "
+								+ getParameters(TAG_NAME, _currentAudioPosition))
+				.setContentText(getParameters(TAG_URL, _currentAudioPosition))
 				.setSmallIcon(R.drawable.ic_launcher).setContentIntent(pIntent)
-				.addAction(R.drawable.fail, "record", pIntentRecord)
-				// .addAction(R.drawable.ic_launcher, "stop", pPlayIntent)
-				.build();
+				.addAction(R.drawable.prevous, "Previous", pPrevious)
+				.addAction(R.drawable.pause, "Stop", pStop)
+				.addAction(R.drawable.next, "Next", pNext).build();
 
 		// Hide the notification after its selected
 		// noti.flags |= Notification.FLAG_AUTO_CANCEL;
 
 		// set Notification
-		notificationManager.notify(MyApplication.NOTIFICATION_ID, noti);
+		cancelNotification();
+		_notificationManager.notify(NOTIFICATION_ID, noti);
 
 	}
 
 	public static void cancelNotification() {
-		notificationManager.cancel(MyApplication.NOTIFICATION_ID);
+		_notificationManager.cancel(NOTIFICATION_ID);
 	}
 
 	public static String getParameters(String tagName, int position) {
-		HashMap<String, String> params = radioList.get(position);
+		HashMap<String, String> params = _radioList.get(position);
 		if (tagName == TAG_NAME) {
 			return params.get(TAG_NAME);
 		} else if (tagName == TAG_URL) {
@@ -136,4 +173,15 @@ public class MyApplication extends Application {
 			return null;
 		}
 	}
+
+	public static void setCurrentAudioPosition(int position) {
+		_currentAudioPosition = position;
+	}
+
+	public static int getCurrentAudioPosition() {
+		return _currentAudioPosition;
+	}
+
+	// TODO killYourSelf
+	// Process.killProcess(Process.myPid());
 }
