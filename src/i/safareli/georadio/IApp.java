@@ -119,19 +119,18 @@ public class IApp extends Application {
 
 		// intent for stop button
 		Intent Stop = new Intent(_context, PlayerBroadcastController.class);
-		Stop.putExtra(IApp.KAY_CONTROLLER_OPTIONS, Player.CONTROLLER_STOP);
+		Stop.setAction(Player.CONTROLLER_STOP);	 
 		PendingIntent pStop = PendingIntent.getBroadcast(_context, 0, Stop, 0);
 
 		// intent for Previous button
 		Intent Previous = new Intent(_context, PlayerBroadcastController.class);
-		Previous.putExtra(IApp.KAY_CONTROLLER_OPTIONS,
-				Player.CONTROLLER_PREVIOUS);
+		Previous.setAction(Player.CONTROLLER_PREVIOUS);	
 		PendingIntent pPrevious = PendingIntent.getBroadcast(_context, 0,
 				Previous, 0);
 
 		// intent for Next button
 		Intent Next = new Intent(_context, PlayerBroadcastController.class);
-		Next.putExtra(IApp.KAY_CONTROLLER_OPTIONS, Player.CONTROLLER_NEXT);
+		Next.setAction(Player.CONTROLLER_NEXT);
 		PendingIntent pNext = PendingIntent.getBroadcast(_context, 0, Next, 0);
 
 		// Build notification
@@ -196,8 +195,11 @@ public class IApp extends Application {
 	}
 
 	public static void unlockorientation() {
-		IApp.getActivity().setRequestedOrientation(
-				ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+		if (IApp.getActivity() != null) {
+			IApp.getActivity().setRequestedOrientation(
+					ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+		}
+
 	}
 	// TODO killYourSelf
 	// Process.killProcess(Process.myPid());

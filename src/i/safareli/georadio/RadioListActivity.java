@@ -81,7 +81,7 @@ public class RadioListActivity extends ListActivity {
 				IApp.setCurrentAudioPosition(position);
 				// in.putExtra(MyApplication.KAY_POSITION, position);
 				startActivity(in);
-
+				RadioListActivity.this.finish();
 			}
 
 		});
@@ -106,13 +106,7 @@ public class RadioListActivity extends ListActivity {
 
 		super.onPause();
 	}
-
-	@Override
-	protected void onStop() {
-		super.onStop();
-		IApp.setActivity(null);
-	}
-
+ 
 	@Override
 	public void onBackPressed() {
 		// super.onBackPressed();

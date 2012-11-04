@@ -6,7 +6,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -36,8 +35,7 @@ public class SingleRadioActivity extends Activity {
 		// Displaying all values on the screen
 		TextView tvInfo = (TextView) findViewById(R.id.tvInfo);
 		tvInfo.setText(name + "\n " + url);
-
-		Log.v("sapara", "onCreate");
+ 
 		setUpVariables();
 		try {
 			mediaPlayer = IApp.setPlayer(url);
@@ -77,7 +75,7 @@ public class SingleRadioActivity extends Activity {
 
 	@Override
 	protected void onPause() {
-		mediaPlayer.dismissBufferingDialog();
+		mediaPlayer.dismissBufferingDialog(); 
 		IApp.setActivity(null);
 		super.onPause();
 	}// END onPause

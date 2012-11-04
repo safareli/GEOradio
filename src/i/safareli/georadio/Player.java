@@ -5,7 +5,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.media.AudioManager;
@@ -51,9 +50,9 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 	protected static final int STATE_END = 8 + unic_int;
 	protected static final int STATE_ERROR = 9 + unic_int;
 	protected static final int STATE_PLAYBACKCOMPLETED = 10 + unic_int;
-	protected static final int CONTROLLER_STOP = 11 + unic_int;
-	protected static final int CONTROLLER_NEXT = 12 + unic_int;
-	protected static final int CONTROLLER_PREVIOUS = 13 + unic_int;
+	protected static final String CONTROLLER_STOP = "CONTROLLER_STOP";
+	protected static final String CONTROLLER_NEXT = "CONTROLLER_NEXT";
+	protected static final String CONTROLLER_PREVIOUS = "CONTROLLER_PREVIOUS";
 	private int _corentState = STATE_IDLE;
 
 	public Player(String url) throws IllegalArgumentException,
@@ -109,8 +108,7 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 
 	private ProgressDialog getBufferingDialog() {
 		if (_bufferingDialog == null) {
-			_bufferingDialog = new ProgressDialog(IApp.getActivity());
-			_bufferingDialog.getContext().equals((Context) IApp.getActivity());
+			_bufferingDialog = new ProgressDialog(IApp.getActivity()); 
 			_bufferingDialog.setOnCancelListener(this);
 			_bufferingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 			_bufferingDialog.setMessage("Buffering...");
