@@ -15,11 +15,13 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-public class MyApplication extends Application {
+public class IApp extends Application {
 	private static Player _mp = null;
 	private static Handler _handler;
 	private static ArrayList<HashMap<String, String>> _radioList;
@@ -53,6 +55,10 @@ public class MyApplication extends Application {
 	public void onCreate() {
 		super.onCreate();
 		_context = getApplicationContext();
+		_handler = new Handler();
+		// Set Notification Manager
+		_notificationManager = (NotificationManager) _context
+				.getSystemService(Context.NOTIFICATION_SERVICE);
 	}
 
 	public static Context getAppContext() {
@@ -72,9 +78,6 @@ public class MyApplication extends Application {
 	}
 
 	public static Handler getHandler() {
-		if (_handler == null) {
-			_handler = new Handler();
-		}
 		return _handler;
 	}
 
@@ -109,35 +112,27 @@ public class MyApplication extends Application {
 
 	public static void setNotification() {
 
-		// Set Notification Manager
-		_notificationManager = (NotificationManager) _context
-				.getSystemService(Context.NOTIFICATION_SERVICE);
-
 		// Prepare intent which is triggered if the notification is selected
 		Intent intent = new Intent(_context, SingleRadioActivity.class);
 		PendingIntent pIntent = PendingIntent.getActivity(_context, 0, intent,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+				0);
 
 		// intent for stop button
 		Intent Stop = new Intent(_context, PlayerBroadcastController.class);
-		Stop.putExtra(MyApplication.KAY_CONTROLLER_OPTIONS,
-				Player.CONTROLLER_STOP);
-		PendingIntent pStop = PendingIntent.getBroadcast(_context, 0, Stop,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+		Stop.putExtra(IApp.KAY_CONTROLLER_OPTIONS, Player.CONTROLLER_STOP);
+		PendingIntent pStop = PendingIntent.getBroadcast(_context, 0, Stop, 0);
 
 		// intent for Previous button
 		Intent Previous = new Intent(_context, PlayerBroadcastController.class);
-		Previous.putExtra(MyApplication.KAY_CONTROLLER_OPTIONS,
+		Previous.putExtra(IApp.KAY_CONTROLLER_OPTIONS,
 				Player.CONTROLLER_PREVIOUS);
 		PendingIntent pPrevious = PendingIntent.getBroadcast(_context, 0,
-				Previous, PendingIntent.FLAG_UPDATE_CURRENT);
+				Previous, 0);
 
 		// intent for Next button
 		Intent Next = new Intent(_context, PlayerBroadcastController.class);
-		Next.putExtra(MyApplication.KAY_CONTROLLER_OPTIONS,
-				Player.CONTROLLER_NEXT);
-		PendingIntent pNext = PendingIntent.getBroadcast(_context, 0, Next,
-				PendingIntent.FLAG_UPDATE_CURRENT);
+		Next.putExtra(IApp.KAY_CONTROLLER_OPTIONS, Player.CONTROLLER_NEXT);
+		PendingIntent pNext = PendingIntent.getBroadcast(_context, 0, Next, 0);
 
 		// Build notification
 		Notification noti = new NotificationCompat.Builder(_context)
@@ -175,13 +170,35 @@ public class MyApplication extends Application {
 	}
 
 	public static void setCurrentAudioPosition(int position) {
-		_currentAudioPosition = position;
+		if (position == _radioList.size()) {
+			_currentAudioPosition = 0;
+		} else if (position == -1) {
+			_currentAudioPosition = _radioList.size() - 1;
+		} else {
+			_currentAudioPosition = position;
+		}
 	}
 
 	public static int getCurrentAudioPosition() {
 		return _currentAudioPosition;
 	}
 
+	public static void lockorientation() {
+		int current_orientation = IApp.getActivity().getResources()
+				.getConfiguration().orientation;
+		if (current_orientation == Configuration.ORIENTATION_LANDSCAPE) {
+			IApp.getActivity().setRequestedOrientation(
+					ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		} else {
+			IApp.getActivity().setRequestedOrientation(
+					ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		}
+	}
+
+	public static void unlockorientation() {
+		IApp.getActivity().setRequestedOrientation(
+				ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+	}
 	// TODO killYourSelf
 	// Process.killProcess(Process.myPid());
 }

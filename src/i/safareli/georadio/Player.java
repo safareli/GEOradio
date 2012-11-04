@@ -92,23 +92,25 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 		if (_bufferingDialog != null) {
 			_bufferingDialog.dismiss();
 			_bufferingDialog = null;
+			IApp.unlockorientation();
+		
 		}
 	}
 
 	private void showBufferingDialog() {
-		if (MyApplication.getActivity() == null) {
-			Toast.makeText(MyApplication.getAppContext(), "Buffering...",
+		if (IApp.getActivity() == null) {
+			Toast.makeText(IApp.getAppContext(), "Buffering...",
 					Toast.LENGTH_LONG).show();
 		} else {
 			getBufferingDialog().show();
+			IApp.lockorientation();
 		}
 	}
 
 	private ProgressDialog getBufferingDialog() {
 		if (_bufferingDialog == null) {
-			_bufferingDialog = new ProgressDialog(MyApplication.getActivity());
-			_bufferingDialog.getContext().equals(
-					(Context) MyApplication.getActivity());
+			_bufferingDialog = new ProgressDialog(IApp.getActivity());
+			_bufferingDialog.getContext().equals((Context) IApp.getActivity());
 			_bufferingDialog.setOnCancelListener(this);
 			_bufferingDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 			_bufferingDialog.setMessage("Buffering...");
@@ -217,8 +219,6 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 
 	public void onClick(View v) {
 		if (_bPlay != null && v.getId() == _bPlay.getId()) {
-			// !isPreparing()
-
 			if (isInState(STATE_INITIALIZED) || isInState(STATE_STOPPED)) {
 				prepareAsync();
 			} else if (isInState(STATE_PAUSED) || isInState(STATE_PREPARED)
@@ -336,7 +336,7 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 		if (getCurrentPosition() > 0) {
 			seekTo(0);
 		}
-		MyApplication.cancelNotification();
+		IApp.cancelNotification();
 		setState(STATE_STOPPED);
 		if (_timer != null)
 			_timer.cancel();
@@ -345,11 +345,12 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 
 	@Override
 	public void release() {
+		setState(STATE_END);
 		// _bufferingDialog.dismiss();
 		if (_timer != null)
 			_timer.cancel();
 
-		MyApplication.cancelNotification();
+		IApp.cancelNotification();
 		_bPause = null;
 		_bPlay = null;
 		_bStop = null;
@@ -361,7 +362,6 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 		_bPause = null;
 		_bStop = null;
 		_currentPosition = -1;
-		setState(STATE_END);
 		_dataSource = null;
 		_handler = null;
 		super.release();
@@ -374,26 +374,31 @@ public class Player extends MediaPlayer implements OnPreparedListener,
 
 	public boolean onError(MediaPlayer mp, int what, int extra) {
 		setState(STATE_ERROR);
-		MyApplication.cancelNotification();
+		IApp.cancelNotification();
 		if (what == MEDIA_ERROR_UNKNOWN) {
-			Toast.makeText(MyApplication.getAppContext(),
-					"MEDIA_ERROR_UNKNOWN", Toast.LENGTH_LONG).show();
+			Toast.makeText(IApp.getAppContext(), "MEDIA_ERROR_UNKNOWN",
+					Toast.LENGTH_LONG).show();
 			return true;
 		} else if (what == MEDIA_ERROR_SERVER_DIED) {
-			Toast.makeText(MyApplication.getAppContext(),
-					"MEDIA_ERROR_SERVER_DIED", Toast.LENGTH_LONG).show();
+			Toast.makeText(IApp.getAppContext(), "MEDIA_ERROR_SERVER_DIED",
+					Toast.LENGTH_LONG).show();
 			return true;
 		} else if (what == MEDIA_ERROR_UNKNOWN) {
-			Toast.makeText(MyApplication.getAppContext(),
-					"MEDIA_ERROR_SERVER_DIED", Toast.LENGTH_LONG).show();
+			Toast.makeText(IApp.getAppContext(), "MEDIA_ERROR_SERVER_DIED",
+					Toast.LENGTH_LONG).show();
 			return true;
+		} else {
+			Toast.makeText(IApp.getAppContext(),
+					"ERROR_UNKNOWN:" + what + ":" + extra, Toast.LENGTH_LONG)
+					.show();
+			return false;
 		}
-		return false;
 	}
 
 	public void onCancel(DialogInterface dialog) {
-		if (MyApplication.getActivity() != null) {
-			MyApplication.getActivity().finish();
+		if (IApp.getActivity() != null) {
+			IApp.unlockorientation();
+			IApp.getActivity().onBackPressed();
 		}
 		release();
 	}

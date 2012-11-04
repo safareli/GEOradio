@@ -23,16 +23,15 @@ public class SingleRadioActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_player);
-		MyApplication.setActivity(this);
-
-		// getting intent data
-		// Intent in = getIntent();
-		// Get JSON values from previous intent
-		// position = in.getIntExtra(MyApplication.KAY_POSITION, 0);
-		position = MyApplication.getCurrentAudioPosition();
+		IApp.setActivity(this);
+		IApp.cancelNotification();
+		Helper.checkInternetConnection();
+ 
+		// Get JSON values from previous intent 
+		position = IApp.getCurrentAudioPosition();
 		// Get radio name and url
-		name = MyApplication.getParameters(MyApplication.TAG_NAME, position);
-		url = MyApplication.getParameters(MyApplication.TAG_URL, position);
+		name = IApp.getParameters(IApp.TAG_NAME, position);
+		url = IApp.getParameters(IApp.TAG_URL, position);
 
 		// Displaying all values on the screen
 		TextView tvInfo = (TextView) findViewById(R.id.tvInfo);
@@ -41,7 +40,7 @@ public class SingleRadioActivity extends Activity {
 		Log.v("sapara", "onCreate");
 		setUpVariables();
 		try {
-			mediaPlayer = MyApplication.setPlayer(url);
+			mediaPlayer = IApp.setPlayer(url);
 			setPlayerControler();
 			if (mediaPlayer.isInState(Player.STATE_INITIALIZED)
 					|| mediaPlayer.isInState(Player.STATE_STOPPED)) {
@@ -73,15 +72,14 @@ public class SingleRadioActivity extends Activity {
 		mediaPlayer.setStopButton(bStop);
 		mediaPlayer.setPlayButton(bPlay);
 		// TODO hendler from app
-		mediaPlayer.setHandler(MyApplication.getHandler());
+		//mediaPlayer.setHandler(MyApplication.getHandler());
 	}// END setPlayerControler
 
 	@Override
 	protected void onPause() {
 		mediaPlayer.dismissBufferingDialog();
-		MyApplication.setActivity(null);
+		IApp.setActivity(null);
 		super.onPause();
-		finish();
 	}// END onPause
 
 	@Override
@@ -89,6 +87,7 @@ public class SingleRadioActivity extends Activity {
 		Intent intent = new Intent(getApplicationContext(),
 				RadioListActivity.class);
 		startActivity(intent);
+		finish();
 		// super.onBackPressed();
 	}
 }

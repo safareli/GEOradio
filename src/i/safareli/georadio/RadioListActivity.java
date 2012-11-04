@@ -21,12 +21,11 @@ public class RadioListActivity extends ListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_radio_list);
-		MyApplication.setActivity(this);
-		MyApplication.cancelNotification();
-		Helper.checkInternetConnection(this);
+		IApp.setActivity(this);
 
-		if (!MyApplication.isSetRadioList()) {
-			new JSONTask().execute(MyApplication.JSON_URL);
+		Helper.checkInternetConnection();
+		if (!IApp.isSetRadioList()) {
+			new JSONTask().execute(IApp.JSON_URL);
 		} else {
 			doJob();
 		}
@@ -50,7 +49,7 @@ public class RadioListActivity extends ListActivity {
 		protected void onPostExecute(JSONObject jsonResult) {
 			super.onPostExecute(jsonResult);
 			try {
-				MyApplication.setRadioList(jsonResult);
+				IApp.setRadioList(jsonResult);
 			} catch (JSONException e) {
 				Helper.showException(e);
 			}
@@ -61,8 +60,8 @@ public class RadioListActivity extends ListActivity {
 
 	public void doJob() {
 		ListAdapter adapter = new SimpleAdapter(RadioListActivity.this,
-				MyApplication.getRadioList(), R.layout.list_item, new String[] {
-						MyApplication.TAG_NAME, MyApplication.TAG_URL },
+				IApp.getRadioList(), R.layout.list_item, new String[] {
+						IApp.TAG_NAME, IApp.TAG_URL },
 				new int[] { R.id.tvName, R.id.tvUrl });
 
 		RadioListActivity.this.setListAdapter(adapter);
@@ -79,7 +78,7 @@ public class RadioListActivity extends ListActivity {
 				// Starting new intent
 				Intent in = new Intent(getApplicationContext(),
 						SingleRadioActivity.class);
-				MyApplication.setCurrentAudioPosition(position);
+				IApp.setCurrentAudioPosition(position);
 				// in.putExtra(MyApplication.KAY_POSITION, position);
 				startActivity(in);
 
@@ -90,21 +89,33 @@ public class RadioListActivity extends ListActivity {
 	}
 
 	@Override
+	protected void onResume() {
+		super.onResume();
+		IApp.cancelNotification();
+		// setting Activity in case resume happend
+		IApp.setActivity(this);
+	}
+
+	@Override
 	protected void onPause() {
+		IApp.setActivity(null);
+		if (IApp.getPlayer() != null
+				&& IApp.getPlayer().isInState(Player.STATE_STARTED)) {
+			IApp.setNotification();
+		}
+
 		super.onPause();
-		MyApplication.setActivity(null);
-		finish();
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		IApp.setActivity(null);
 	}
 
 	@Override
 	public void onBackPressed() {
-		if (MyApplication.getPlayer() != null
-				&& MyApplication.getPlayer().isPlaying()) {
-			MyApplication.setNotification();
-		}
-
 		// super.onBackPressed();
-		MyApplication.setActivity(null);
 		finish();
 	}
 }

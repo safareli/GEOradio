@@ -11,10 +11,10 @@ public class PlayerBroadcastController extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		int position = MyApplication.getCurrentAudioPosition();
+		int position = IApp.getCurrentAudioPosition();
 
 		int playerOption = intent.getIntExtra(
-				MyApplication.KAY_CONTROLLER_OPTIONS, 0);
+				IApp.KAY_CONTROLLER_OPTIONS, 0);
 
 		// Get radio name and url
 		// String name = MyApplication.getParameters(MyApplication.TAG_NAME,
@@ -26,12 +26,13 @@ public class PlayerBroadcastController extends BroadcastReceiver {
 		switch (playerOption) {
 		case Player.CONTROLLER_NEXT:
 			
-			MyApplication.setCurrentAudioPosition(++position);
-			url = MyApplication.getParameters(MyApplication.TAG_URL, position);
+			IApp.setCurrentAudioPosition(++position);
+			position = IApp.getCurrentAudioPosition();
+			url = IApp.getParameters(IApp.TAG_URL, position);
 			
 			try {
-				MyApplication.setPlayer(url).prepareAsync();
-				MyApplication.setNotification();
+				IApp.setPlayer(url).prepareAsync();
+				IApp.setNotification();
 			} catch (IllegalArgumentException e) {
 				Helper.showException("IllegalArgumentException", e);
 			} catch (SecurityException e) {
@@ -46,12 +47,13 @@ public class PlayerBroadcastController extends BroadcastReceiver {
 			break;
 		case Player.CONTROLLER_PREVIOUS:
 			
-			MyApplication.setCurrentAudioPosition(--position);
-			url = MyApplication.getParameters(MyApplication.TAG_URL, position);
+			IApp.setCurrentAudioPosition(--position);
+			position = IApp.getCurrentAudioPosition();
+			url = IApp.getParameters(IApp.TAG_URL, position);
 			
 			try {
-				MyApplication.setPlayer(url).prepareAsync();
-				MyApplication.setNotification();
+				IApp.setPlayer(url).prepareAsync();
+				IApp.setNotification();
 			} catch (IllegalArgumentException e) {
 				Helper.showException("IllegalArgumentException", e);
 			} catch (SecurityException e) {
@@ -66,7 +68,7 @@ public class PlayerBroadcastController extends BroadcastReceiver {
 			break;
 		case Player.CONTROLLER_STOP:
 			Log.d("sapara", "stop");
-			MyApplication.getPlayer().stop();
+			IApp.getPlayer().stop();
 			break;
 
 		default:
