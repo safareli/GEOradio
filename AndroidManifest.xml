@@ -6,9 +6,7 @@
     <uses-sdk
         android:minSdkVersion="8"
         android:targetSdkVersion="16" />
-
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+ 
 
     <!-- Internet Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -30,6 +28,7 @@
         </activity>
         <activity android:name=".SingleRadioActivity" >
         </activity>
+
 
         <receiver android:name=".PlayerBroadcastController" >
         </receiver>

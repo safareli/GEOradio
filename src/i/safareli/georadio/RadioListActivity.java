@@ -5,10 +5,13 @@ import org.json.JSONObject;
 
 import android.app.ListActivity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListAdapter;
@@ -20,6 +23,7 @@ public class RadioListActivity extends ListActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_radio_list);
 		IApp.setActivity(this);
 
@@ -34,8 +38,28 @@ public class RadioListActivity extends ListActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.activity_android_list_view, menu);
+		getMenuInflater().inflate(R.menu.common, menu);
 		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.miSourceCode:
+			Intent sourceCode = new Intent(Intent.ACTION_VIEW,
+					Uri.parse("https://github.com/Safareli/GEOradio"));
+			startActivity(sourceCode);
+			return true;
+
+		case R.id.miAuthor:
+			Intent author = new Intent(Intent.ACTION_VIEW,
+					Uri.parse("http://safareli.github.com/"));
+			startActivity(author);
+			return true;
+
+		default:
+			return false;
+		}
 	}
 
 	public class JSONTask extends AsyncTask<String, Void, JSONObject> {
@@ -61,8 +85,8 @@ public class RadioListActivity extends ListActivity {
 	public void doJob() {
 		ListAdapter adapter = new SimpleAdapter(RadioListActivity.this,
 				IApp.getRadioList(), R.layout.list_item, new String[] {
-						IApp.TAG_NAME, IApp.TAG_URL },
-				new int[] { R.id.tvName, R.id.tvUrl });
+						IApp.TAG_NAME, IApp.TAG_URL }, new int[] { R.id.tvName,
+						R.id.tvUrl });
 
 		RadioListActivity.this.setListAdapter(adapter);
 
@@ -106,7 +130,7 @@ public class RadioListActivity extends ListActivity {
 
 		super.onPause();
 	}
- 
+
 	@Override
 	public void onBackPressed() {
 		// super.onBackPressed();

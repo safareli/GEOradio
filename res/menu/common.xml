@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/miSourceCode"
+        android:title="View Source Code"/>
+    <item
+        android:id="@+id/miAuthor"
+        android:title="About Author"/>
+
+</menu>

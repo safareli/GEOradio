@@ -22,7 +22,8 @@ public final class R {
     public static final class id {
         public static final int bPlay=0x7f070000;
         public static final int bStop=0x7f070001;
-        public static final int menu_settings=0x7f070005;
+        public static final int miAuthor=0x7f070006;
+        public static final int miSourceCode=0x7f070005;
         public static final int tvInfo=0x7f070002;
         public static final int tvName=0x7f070003;
         public static final int tvUrl=0x7f070004;
@@ -33,7 +34,7 @@ public final class R {
         public static final int list_item=0x7f030002;
     }
     public static final class menu {
-        public static final int activity_android_list_view=0x7f060000;
+        public static final int common=0x7f060000;
     }
     public static final class string {
         public static final int app_name=0x7f040000;
