@@ -140,9 +140,9 @@ public class IApp extends Application {
 								+ getParameters(TAG_NAME, _currentAudioPosition))
 				.setContentText(getParameters(TAG_URL, _currentAudioPosition))
 				.setSmallIcon(R.drawable.ic_launcher).setContentIntent(pIntent)
-				.addAction(R.drawable.prevous, "Previous", pPrevious)
-				.addAction(R.drawable.pause, "Stop", pStop)
-				.addAction(R.drawable.next, "Next", pNext).build();
+				.addAction(R.drawable.light_previous, "Previous", pPrevious)
+				.addAction(R.drawable.light_stop, "Stop", pStop)
+				.addAction(R.drawable.light_next, "Next", pNext).build();
 
 		// Hide the notification after its selected
 		// noti.flags |= Notification.FLAG_AUTO_CANCEL;

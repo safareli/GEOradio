@@ -8,23 +8,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
-        <Button
-            android:id="@+id/bPlay"
+        <ImageButton
+            android:id="@+id/ibPlay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="play" />
+            android:src="@drawable/play" />
 
-        <Button
-            android:id="@+id/bStop"
+        <ImageButton
+            android:id="@+id/ibStop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="stop" />
+            android:src="@drawable/stop" />
     </LinearLayout>
 
     <TextView
         android:id="@+id/tvInfo"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="info" />
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>

@@ -7,11 +7,11 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Window;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 public class SingleRadioActivity extends Activity {
-	Button bPlay, bStop;
+	ImageButton bPlay, bStop;
 	Player mediaPlayer;
 	TextView tvInfo;
 	ProgressDialog dialog;
@@ -65,8 +65,8 @@ public class SingleRadioActivity extends Activity {
 	}
 
 	public void setUpVariables() {
-		bPlay = (Button) findViewById(R.id.bPlay);
-		bStop = (Button) findViewById(R.id.bStop);
+		bPlay = (ImageButton) findViewById(R.id.ibPlay);
+		bStop = (ImageButton) findViewById(R.id.ibStop);
 	}// END setProgressText
 
 	public void setPlayerControler() {

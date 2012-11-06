@@ -18,7 +18,7 @@ public class Helper {
 					.setTitle("Internet Connection Error")
 					.setMessage(
 							"you aren't connected to internet to use this app you need Internet Connection")
-					.setIcon(R.drawable.fail)
+					.setIcon(R.drawable.warning)
 					.setPositiveButton("OK", new OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {
 							IApp.getActivity().finish();

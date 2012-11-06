@@ -11,17 +11,26 @@ public final class R {
     public static final class attr {
     }
     public static final class drawable {
-        public static final int fail=0x7f020000;
-        public static final int ic_action_search=0x7f020001;
-        public static final int ic_launcher=0x7f020002;
-        public static final int next=0x7f020003;
-        public static final int pause=0x7f020004;
-        public static final int prevous=0x7f020005;
-        public static final int success=0x7f020006;
+        public static final int accept=0x7f020000;
+        public static final int forward=0x7f020001;
+        public static final int ic_action_search=0x7f020002;
+        public static final int ic_launcher=0x7f020003;
+        public static final int light_next=0x7f020004;
+        public static final int light_previous=0x7f020005;
+        public static final int light_stop=0x7f020006;
+        public static final int next=0x7f020007;
+        public static final int pause=0x7f020008;
+        public static final int play=0x7f020009;
+        public static final int previous=0x7f02000a;
+        public static final int repeat=0x7f02000b;
+        public static final int rewind=0x7f02000c;
+        public static final int shuffle=0x7f02000d;
+        public static final int stop=0x7f02000e;
+        public static final int warning=0x7f02000f;
     }
     public static final class id {
-        public static final int bPlay=0x7f070000;
-        public static final int bStop=0x7f070001;
+        public static final int ibPlay=0x7f070000;
+        public static final int ibStop=0x7f070001;
         public static final int miAuthor=0x7f070006;
         public static final int miSourceCode=0x7f070005;
         public static final int tvInfo=0x7f070002;
